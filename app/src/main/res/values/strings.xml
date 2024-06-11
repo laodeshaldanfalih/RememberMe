@@ -10,9 +10,15 @@
     <string name="to_do_contact">To-Do Contact</string>
     <string name="name1">Andi Slamet</string>
     <string name="name2">Wahidin</string>
+
     <integer name="lc1">2</integer>
     <integer name="lc2">3</integer>
 
 <!--    Long Time No See -->
     <string name="long_time_no_see">Long Time No See</string>
+    <string name="name3">Abdul Aman</string>
+    <string name="name4">Kang Galon</string>
+
+    <integer name="lc3">34</integer>
+    <integer name="lc4">42</integer>
 </resources>

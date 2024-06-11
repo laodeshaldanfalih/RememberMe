@@ -20,6 +20,18 @@ class DataSource {
                 lastContact = R.integer.lc2,
                 savedDate = Date()
             ),
+            ToDoContact(
+                socialMedia = SocialMedia.Telegram,
+                name = R.string.name3,
+                lastContact = R.integer.lc3,
+                savedDate = Date()
+            ),
+            ToDoContact(
+                socialMedia = SocialMedia.Telegram,
+                name = R.string.name4,
+                lastContact = R.integer.lc4,
+                savedDate = Date()
+            ),
         )
     }
 }

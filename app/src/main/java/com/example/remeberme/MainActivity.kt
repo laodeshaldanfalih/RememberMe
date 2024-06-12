@@ -142,6 +142,7 @@ fun HomePage(modifier: Modifier = Modifier){
     ){
         LazyColumn (
             modifier = Modifier
+                .background(Color(0xFFFFFFFF))
                 .fillMaxSize()
                 .padding(top = 33.dp)
                 .padding(horizontal = 16.dp)
@@ -362,7 +363,6 @@ fun toDoContactCard(modifier: Modifier = Modifier, toDoContact: ToDoContact){
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ){
-                Text(text = "Last Contacted: ${LocalContext.current.getString(toDoContact.lastContact)} Days")
                 Text(text = "Saved: $formattedDate")
             }
             Box(

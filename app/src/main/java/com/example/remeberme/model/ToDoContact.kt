@@ -8,10 +8,11 @@ import java.util.Date
 enum class SocialMedia{
     Whatsapp, Telegram, X
 }
-class ToDoContact(
+public class ToDoContact(
 //    val image: Image,
     val socialMedia: SocialMedia,
     @StringRes val name: Int,
     val lastContact: Int,
     val savedDate: Date
 )
+

@@ -10,14 +10,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.LocalOverscrollConfiguration
-import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.ScrollableDefaults
 import androidx.compose.foundation.gestures.rememberScrollableState
 import androidx.compose.foundation.gestures.scrollable
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -41,26 +36,24 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.example.remeberme.data.DataSource
 import com.example.remeberme.model.ToDoContact
 import com.example.remeberme.ui.theme.RemeberMeTheme
 import java.text.SimpleDateFormat
+
+enum class Screen {
+    Splash, Home
+}
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -83,12 +76,17 @@ class MainActivity : ComponentActivity() {
 fun RememberMeApp(
     modifier: Modifier = Modifier,
 ){
-    SplashPage()
-    HomePage()
+    var currentScreen by remember { mutableStateOf(Screen.Splash) }
+    when(currentScreen) {
+        Screen.Splash -> SplashPage(onGetStartedClick = { currentScreen = Screen.Home })
+        Screen.Home -> HomePage()
+    }
+//    SplashPage()
+//    HomePage()
 }
 
 @Composable
-fun SplashPage(modifier: Modifier = Modifier) {
+fun SplashPage(modifier: Modifier = Modifier, onGetStartedClick: () -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -122,9 +120,7 @@ fun SplashPage(modifier: Modifier = Modifier) {
                 .height(100.dp)
                 .padding(bottom = 48.dp)
                 .align(Alignment.BottomCenter),
-            onClick = ({
-
-            }),
+            onClick = onGetStartedClick, // Update this line
             colors = ButtonDefaults.buttonColors(Color(0xFFD90368))
         ) {
             Text(

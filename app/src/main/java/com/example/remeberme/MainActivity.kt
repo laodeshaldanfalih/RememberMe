@@ -1,6 +1,7 @@
 package com.example.remeberme
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.LocalOverscrollConfiguration
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.rememberScrollableState
 import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.PaddingValues
@@ -41,6 +43,10 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.runtime.CompositionLocalProvider
@@ -48,10 +54,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.remeberme.data.DataSource
+import com.example.remeberme.model.SocialMedia
 import com.example.remeberme.model.ToDoContact
 import com.example.remeberme.ui.theme.RemeberMeTheme
 import java.text.SimpleDateFormat
@@ -116,7 +124,7 @@ fun RememberMeApp(
 }
 
 @Composable
-fun SplashPage(modifier: Modifier = Modifier, onGetStartedClick: () -> Unit) {
+fun SplashPage(onGetStartedClick: () -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -165,7 +173,7 @@ fun SplashPage(modifier: Modifier = Modifier, onGetStartedClick: () -> Unit) {
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun HomePage(modifier: Modifier = Modifier, onAddContactClick: () -> Unit, onViewAllContactClick: () -> Unit, onEditContactClick: (ToDoContact) -> Unit){
+fun HomePage(onAddContactClick: () -> Unit, onViewAllContactClick: () -> Unit, onEditContactClick: (ToDoContact) -> Unit){
     val scrollState = rememberScrollableState { delta -> delta }
     CompositionLocalProvider (
         LocalOverscrollConfiguration provides null
@@ -200,13 +208,6 @@ fun HomePage(modifier: Modifier = Modifier, onAddContactClick: () -> Unit, onVie
                 Spacer(modifier = Modifier.height(16.dp))
                 ToDoContact(onEditContactClick = onEditContactClick)
                 Spacer(modifier = Modifier.height(32.dp))
-//                Text(
-//                    text = stringResource(id = R.string.long_time_no_see),
-//                    fontSize = 16.sp,
-//                    fontWeight = FontWeight.Medium
-//                )
-//                Spacer(modifier = Modifier.height(16.dp))
-//                ToDoContact(onEditContactClick = onEditContactClick)
             }
 
         }
@@ -214,8 +215,8 @@ fun HomePage(modifier: Modifier = Modifier, onAddContactClick: () -> Unit, onVie
 }
 
 @Composable
-fun ContactCard(modifier: Modifier = Modifier, onAddContactClick: () -> Unit, onViewAllContactClick: () -> Unit){
-    val contactsAmount = 4;
+fun ContactCard(onAddContactClick: () -> Unit, onViewAllContactClick: () -> Unit){
+    val contactsAmount = 4
     Card(
         colors = CardDefaults.cardColors(
             Color(0xffF9FAFB)
@@ -309,17 +310,16 @@ fun ContactCard(modifier: Modifier = Modifier, onAddContactClick: () -> Unit, on
 }
 
 @Composable
-fun ToDoContact(modifier: Modifier = Modifier, onEditContactClick: (ToDoContact) -> Unit){
+fun ToDoContact(onEditContactClick: (ToDoContact) -> Unit){
     ToDoContactList(toDoContactList = DataSource().loadToDoContact(), onEditContactClick = onEditContactClick)
 }
 
 @Composable
 fun ToDoContactList(
-    modifier: Modifier = Modifier,
     toDoContactList: List<ToDoContact>,  onEditContactClick: (ToDoContact) -> Unit){
     for (todo in toDoContactList){
         Column {
-            toDoContactCard(
+            ToDoContactCard(
                 toDoContact = todo,
                 modifier = Modifier.padding(8.dp),
                 onEditContactClick = onEditContactClick
@@ -339,7 +339,7 @@ fun ToDoContactList(
 }
 
 @Composable
-fun toDoContactCard(modifier: Modifier = Modifier, toDoContact: ToDoContact, onEditContactClick: (ToDoContact) -> Unit){
+fun ToDoContactCard(modifier: Modifier = Modifier, toDoContact: ToDoContact, onEditContactClick: (ToDoContact) -> Unit){
     val currentDate = toDoContact.savedDate
     val formatter = SimpleDateFormat("dd/MM/yy")
     val formattedDate = formatter.format(currentDate)
@@ -437,10 +437,21 @@ fun toDoContactCard(modifier: Modifier = Modifier, toDoContact: ToDoContact, onE
 }
 
 @Composable
+fun getSocialMediaIcon(socialMedia: SocialMedia): Painter {
+    return when (socialMedia) {
+        SocialMedia.Whatsapp -> painterResource(id = R.drawable.whatsapp)
+        SocialMedia.Telegram -> painterResource(id = R.drawable.telegram)
+        SocialMedia.X -> painterResource(id = R.drawable.x)
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
 fun AddContactPage(modifier: Modifier = Modifier, onSaveClick: () -> Unit, onBackClick: () -> Unit) {
     var contactName by remember { mutableStateOf("") }
-    var socialMedia by remember { mutableStateOf("") }
-
+    val context = LocalContext.current
+    var selectedSocialMedia by remember { mutableStateOf<SocialMedia?>(null) }
+    var expanded by remember { mutableStateOf(false) }
 
     Box(
         modifier = modifier
@@ -506,23 +517,65 @@ fun AddContactPage(modifier: Modifier = Modifier, onSaveClick: () -> Unit, onBac
                     color = Color.Gray,
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
-                OutlinedTextField(
-                    value = socialMedia,
-                    onValueChange = { socialMedia = it },
-                    label = { Text("Select Social Media") },
-                    singleLine = true,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 16.dp)
-                        .heightIn(min = 56.dp),
-                    textStyle = TextStyle(fontSize = 16.sp)
-                )
+                Box {
+                    ExposedDropdownMenuBox(
+                        expanded = expanded,
+                        onExpandedChange = {
+                            expanded = !expanded
+                        }
+                    ) {
+                        OutlinedTextField(
+                            value = selectedSocialMedia?.name ?: "Select Social Media",
+                            onValueChange = {},
+                            readOnly = true,
+                            label = { Text("Select social media") },
+                            leadingIcon = {
+                                selectedSocialMedia?.let {
+                                    Icon(
+                                        painter = getSocialMediaIcon(it),
+                                        contentDescription = it.name
+                                    )
+                                }
+                            },
+                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                            modifier = Modifier
+                                .menuAnchor()
+                                .fillMaxWidth()
+                                .padding(bottom = 16.dp)
+                                .heightIn(min = 56.dp)
+                                .clickable { expanded = !expanded } // Handle click event to toggle dropdown
+                        )
+
+                        ExposedDropdownMenu(
+                            expanded = expanded,
+                            onDismissRequest = { expanded = false }
+                        ) {
+                            SocialMedia.values().forEach { item ->
+                                DropdownMenuItem(
+                                    leadingIcon = {
+                                        Icon(
+                                            painter = getSocialMediaIcon(item),
+                                            contentDescription = item.name,
+                                            modifier = Modifier.size(24.dp)
+                                        )
+                                    },
+                                    text = { Text(text = item.name) },
+                                    onClick = {
+                                        selectedSocialMedia = item
+                                        expanded = false
+                                        Toast.makeText(context, item.name, Toast.LENGTH_SHORT).show()
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
             }
         }
 
         Button(
             onClick = {
-                // Simpan data kontak baru di sini
+                // Save new contact data here
                 onSaveClick()
             },
             colors = ButtonDefaults.buttonColors(Color(0xFFD90368)),
@@ -540,6 +593,10 @@ fun AddContactPage(modifier: Modifier = Modifier, onSaveClick: () -> Unit, onBac
         }
     }
 }
+
+
+
+
 @Composable
 fun EditContactPage(
     contactState: ContactState,
@@ -674,7 +731,7 @@ fun EditContactPage(
 }
 
 @Composable
-fun AllContactPage(modifier: Modifier = Modifier, onEditContactClick: (ToDoContact) -> Unit, onBackClick: () -> Unit,) {
+fun AllContactPage(onEditContactClick: (ToDoContact) -> Unit, onBackClick: () -> Unit,) {
     val scrollState = rememberScrollableState { delta -> delta }
     val contactsAmount = 4;
     val toDoContactList = remember { DataSource().loadToDoContact() }

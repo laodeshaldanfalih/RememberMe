@@ -10,6 +10,6 @@ data class Contact (
     val id: Int = 0,
     @ColumnInfo(name = "contactName")
     val contactName: String,
-    @ColumnInfo(name = "contacType")
+    @ColumnInfo(name = "contactType")
     val contactType: String
 )

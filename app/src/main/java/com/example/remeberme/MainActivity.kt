@@ -2,6 +2,8 @@ package com.example.remeberme
 
 import android.os.Bundle
 import android.widget.Toast
+import android.app.Application
+import com.example.remeberme.data.ContactRoomDB
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -68,6 +70,10 @@ enum class Screen {
     Splash, Home, AddContact, EditContact, AllContact
 }
 data class ContactState(val contact: ToDoContact? = null)
+
+class InventoryApplication : Application(){
+    val database: ContactRoomDB by lazy { ContactRoomDB.getDatabase(this) }
+}
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
